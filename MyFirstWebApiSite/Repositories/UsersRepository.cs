@@ -28,7 +28,7 @@ namespace Repositories
             return user;
         }
 
-        public async Task< User> Login(UserLogin userLogin)
+        public async Task< User> Login(User userLogin)
         {
             return await _UsersContext.Users.Where(user => user.Email == userLogin.Email && user.Password == userLogin.Password).FirstOrDefaultAsync();
         }

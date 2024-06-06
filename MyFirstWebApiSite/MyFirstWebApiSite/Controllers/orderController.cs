@@ -3,6 +3,7 @@ using DTOs;
 using Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Services;
 
 namespace MyFirstWebApiSite.Controllers
@@ -23,6 +24,7 @@ namespace MyFirstWebApiSite.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<orderDTO>> PostOrders([FromBody] orderDTO ordersDTO)
         {
             Order orders = _mapper.Map<orderDTO, Order>(ordersDTO);

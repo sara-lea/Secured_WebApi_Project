@@ -64,15 +64,24 @@ namespace MyFirstWebApiSite.Controllers
         {
            
             UserLogin userToLogin = _mapper.Map<userLoginDTO, UserLogin>(userLoginDto);
-           
+            User user_attempt= _mapper.Map<userLoginDTO, User>(userLoginDto);
+
             _logger.LogInformation($"Login attempted with User Name,{userToLogin.Email} and password {userToLogin.Password}");
-            //_logger.LogError($"Login attempted with User Name,{userToLogin.Email} and password {userToLogin.Password}");
-            User user = await _userService.Login(userToLogin);
+
+            //User user = await _userService.Login(userToLogin);
+            User user = await _userService.Login(user_attempt);
+
+            if (user == null)
+                return NoContent();
+            else
+                Response.Cookies.Append("X-Access-Token", user.Token, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict });
+            
             userDTO userToReturn = _mapper.Map<User, userDTO>(user);
             if (user != null)
                 return Ok(userToReturn);
             return Unauthorized();
         }
+
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]

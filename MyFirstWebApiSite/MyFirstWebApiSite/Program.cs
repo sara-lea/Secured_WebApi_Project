@@ -1,11 +1,15 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using MyFirstWebApiSite;
 using NLog.Web;
 using PresidentsApp.Middlewares;
 using Repositories;
 using Repository;
 using Services;
+using System.Text;
 //sing PresidentsApp.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +36,39 @@ builder.Host.UseNLog();
 builder.Services.AddDbContext<AdoNetUsers326077351Context>(options => options.UseSqlServer(builder.Configuration["ConnectionStrings"]));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("key").Value);
+
+builder.Services
+    .AddAuthentication(option =>
+    option.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme
+
+   )
+    .AddJwtBearer(options =>
+    {
+        options.Events = new JwtBearerEvents()
+        {
+
+            //get cookie value
+            OnMessageReceived = context =>
+            {
+                var a = "";
+                context.Request.Cookies.TryGetValue("X-Access-Token", out a);
+                context.Token = a;
+                return Task.CompletedTask;
+            }
+        };
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ClockSkew = TimeSpan.Zero,
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+        };
+    });
 
 
 var app = builder.Build();
